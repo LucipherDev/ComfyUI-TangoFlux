@@ -31,13 +31,13 @@ python install.py
 
 **If you installed from the ComfyUI-Manager, all the necessary models should be automatically downloaded into the `models/tangoflux` and `models/text_encoders` folders.**
 
-**Otherwise they will be automatically downloaded when the LoadAniDoc node is used for the first time.**
+**Otherwise they will be automatically downloaded when the TangoFluxLoader node is used for the first time.**
 
 **Manual Download:**
 - Download TangoFlux from [here](https://huggingface.co/declare-lab/TangoFlux/tree/main) and put everything in `models/tangoflux` (make sure to include the config files)
 - Download text encoders from [here](https://huggingface.co/google/flan-t5-large/tree/main) and put everything in `models/text_encoders/google-flan-t5-large` (make sure to include the config files)
 
-The nodes can be found in "TangoFlux" category as `TangoFluxDocLoader`, `TangoFluxSampler`, `TangoFluxVAEDecodeAndPlay`.
+The nodes can be found in "TangoFlux" category as `TangoFluxLoader`, `TangoFluxSampler`, `TangoFluxVAEDecodeAndPlay`.
 
 ## Citation
 

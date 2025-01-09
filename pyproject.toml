@@ -1,0 +1,14 @@
+[project]
+name = "comfyui-tangoflux"
+description = "ComfyUI Custom Nodes for 'TangoFlux: Super Fast and Faithful Text to Audio Generation with Flow Matching'. This generates high-quality 44.1kHz audio up to 30 seconds using just a text prompt."
+version = "1.0.0"
+license = {file = "LICENSE"}
+dependencies = ["torch", "torchaudio", "transformers", "diffusers", "accelerate", "tqdm"]
+
+[project.urls]
+Repository = "https://github.com/LucipherDev/ComfyUI-TangoFlux"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = "lucipherdev"
+DisplayName = "ComfyUI-TangoFlux"
