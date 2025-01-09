@@ -13,7 +13,7 @@ download_models = True
 try:
     import folder_paths
     TANGOFLUX_DIR = os.path.join(folder_paths.models_dir, "tangoflux")
-    TEXT_ENCODER_DIR = os.path.join(TANGOFLUX_DIR, "text_encoders")
+    TEXT_ENCODER_DIR = os.path.join(folder_paths.models_dir, "text_encoders")
 except:
     download_models = False
     log.info("Not called by ComfyUI Manager. Models will not be downloaded")

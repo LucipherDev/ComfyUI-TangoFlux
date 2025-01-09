@@ -25,7 +25,7 @@ folder_paths.folder_names_and_paths["tangoflux"] = (
     current_paths,
     folder_paths.supported_pt_extensions,
 )
-TEXT_ENCODER_DIR = os.path.join(TANGOFLUX_DIR, "text_encoders")
+TEXT_ENCODER_DIR = os.path.join(folder_paths.models_dir, "text_encoders")
 
 class TangoFluxLoader:
     @classmethod
