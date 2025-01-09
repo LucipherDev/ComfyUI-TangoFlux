@@ -21,6 +21,12 @@ python install.py
 
 ### Or Install via ComfyUI Manager
 
+#### Check out some demos from [the official demo page](https://tangoflux.github.io/)
+
+## Example Workflow
+
+![example_workflow](https://github.com/user-attachments/assets/3293cf59-d3bf-4d48-8e40-2b9a74ea035a)
+
 ## Usage
 
 **If you installed from the ComfyUI-Manager, all the necessary models should be automatically downloaded into the `models/tangoflux` folder.**

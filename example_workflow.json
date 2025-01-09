@@ -1,0 +1,162 @@
+{
+  "last_node_id": 13,
+  "last_link_id": 15,
+  "nodes": [
+    {
+      "id": 10,
+      "type": "TangoFluxLoader",
+      "pos": [
+        380,
+        320
+      ],
+      "size": [
+        210,
+        46
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "TANGOFLUX_MODEL",
+          "links": [
+            11
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "vae",
+          "type": "TANGOFLUX_VAE",
+          "links": [
+            15
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TangoFluxLoader"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 13,
+      "type": "TangoFluxVAEDecodeAndPlay",
+      "pos": [
+        1060,
+        320
+      ],
+      "size": [
+        315,
+        126
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "vae",
+          "type": "TANGOFLUX_VAE",
+          "link": 15
+        },
+        {
+          "name": "latents",
+          "type": "TANGOFLUX_LATENTS",
+          "link": 14
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "TangoFluxVAEDecodeAndPlay"
+      },
+      "widgets_values": [
+        "TangoFlux",
+        "wav",
+        true
+      ]
+    },
+    {
+      "id": 11,
+      "type": "TangoFluxSampler",
+      "pos": [
+        620,
+        320
+      ],
+      "size": [
+        400,
+        220
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "TANGOFLUX_MODEL",
+          "link": 11
+        }
+      ],
+      "outputs": [
+        {
+          "name": "latents",
+          "type": "TANGOFLUX_LATENTS",
+          "links": [
+            14
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TangoFluxSampler"
+      },
+      "widgets_values": [
+        "A dog barking near the ocean, ocean waves crashing.",
+        50,
+        3,
+        10,
+        714702298733222,
+        "randomize",
+        1
+      ]
+    }
+  ],
+  "links": [
+    [
+      11,
+      10,
+      0,
+      11,
+      0,
+      "TANGOFLUX_MODEL"
+    ],
+    [
+      14,
+      11,
+      0,
+      13,
+      1,
+      "TANGOFLUX_LATENTS"
+    ],
+    [
+      15,
+      10,
+      1,
+      13,
+      0,
+      "TANGOFLUX_VAE"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.9480295566502464,
+      "offset": {
+        "0": -200.8333282470703,
+        "1": -127.03429412841797
+      }
+    }
+  },
+  "version": 0.4
+}
