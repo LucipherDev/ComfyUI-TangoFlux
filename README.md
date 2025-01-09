@@ -29,9 +29,9 @@ python install.py
 
 ## Usage
 
-**If you installed from the ComfyUI-Manager, all the necessary models should be automatically downloaded into the `models/tangoflux` and `models/text_encoders` folders.**
+**All the necessary models should be automatically downloaded when the TangoFluxLoader node is used for the first time.**
 
-**Otherwise they will be automatically downloaded when the TangoFluxLoader node is used for the first time.**
+**Models can also be downloaded using the `install.py` script**
 
 **Manual Download:**
 - Download TangoFlux from [here](https://huggingface.co/declare-lab/TangoFlux/tree/main) and put everything in `models/tangoflux` (make sure to include the config files)

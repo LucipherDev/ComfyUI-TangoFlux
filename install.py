@@ -10,15 +10,19 @@ log = logging.getLogger("TangoFlux")
 
 download_models = True
 
+EXT_PATH = os.path.dirname(os.path.abspath(__file__))
+
 try:
+    folder_paths_path = os.path.abspath(os.path.join(EXT_PATH, "..", "..", "folder_paths.py"))
+
+    sys.path.append(os.path.dirname(folder_paths_path))
+
     import folder_paths
+    
     TANGOFLUX_DIR = os.path.join(folder_paths.models_dir, "tangoflux")
     TEXT_ENCODER_DIR = os.path.join(folder_paths.models_dir, "text_encoders")
 except:
     download_models = False
-    log.info("Not called by ComfyUI Manager. Models will not be downloaded")
-
-EXT_PATH = os.path.dirname(os.path.abspath(__file__))
     
 try:
     log.info(f"Installing requirements")
