@@ -1,0 +1,7 @@
+torch
+torchaudio
+transformers
+diffusers
+accelerate
+tqdm
+
