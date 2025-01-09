@@ -11,7 +11,7 @@
       ],
       "size": [
         210,
-        46
+        102
       ],
       "flags": {},
       "order": 0,
@@ -38,7 +38,10 @@
       "properties": {
         "Node name for S&R": "TangoFluxLoader"
       },
-      "widgets_values": []
+      "widgets_values": [
+        false,
+        0.25
+      ]
     },
     {
       "id": 13,
@@ -115,7 +118,7 @@
         50,
         3,
         10,
-        714702298733222,
+        106139285587780,
         "randomize",
         1
       ]
@@ -152,10 +155,13 @@
   "extra": {
     "ds": {
       "scale": 0.9480295566502464,
-      "offset": {
-        "0": -200.8333282470703,
-        "1": -127.03429412841797
-      }
+      "offset": [
+        -200.83333333333337,
+        -102.2460379319304
+      ]
+    },
+    "node_versions": {
+      "comfyui-tangoflux": "1.0.2"
     }
   },
   "version": 0.4

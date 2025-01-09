@@ -6,13 +6,13 @@ import torch
 import torchaudio
 import re
 
-from diffusers import AutoencoderOobleck
+from diffusers import AutoencoderOobleck, FluxTransformer2DModel
 from huggingface_hub import snapshot_download
 
 from comfy.utils import load_torch_file, ProgressBar
 import folder_paths
 
-from .tangoflux.model import TangoFlux
+from .tangoflux.model import TangoFlux, teacache_forward
 
 log = logging.getLogger("TangoFlux")
 
@@ -27,11 +27,18 @@ folder_paths.folder_names_and_paths["tangoflux"] = (
 )
 TEXT_ENCODER_DIR = os.path.join(folder_paths.models_dir, "text_encoders")
 
+
 class TangoFluxLoader:
     @classmethod
     def INPUT_TYPES(cls):
         return {
-            "required": {},
+            "required": {
+                "enable_teacache": ("BOOLEAN", {"default": False}),
+                "rel_l1_thresh": (
+                    "FLOAT",
+                    {"default": 0.25, "min": 0.0, "max": 10.0, "step": 0.01},
+                ),
+            },
         }
 
     RETURN_TYPES = ("TANGOFLUX_MODEL", "TANGOFLUX_VAE")
@@ -41,14 +48,26 @@ class TangoFluxLoader:
     CATEGORY = "TangoFlux"
     FUNCTION = "load_tangoflux"
     DESCRIPTION = "Load TangoFlux model"
-
+    
     def __init__(self):
         self.model = None
         self.vae = None
+        self.enable_teacache = False
+        self.rel_l1_thresh = 0.25
+        self.original_forward = FluxTransformer2DModel.forward
 
-    def load_tangoflux(self, tangoflux_path=TANGOFLUX_DIR, text_encoder_path=TEXT_ENCODER_DIR, device="cuda"):
-        if None in [self.model, self.vae]:
-            pbar = ProgressBar(5)
+    def load_tangoflux(
+        self,
+        enable_teacache=False,
+        rel_l1_thresh=0.25,
+        tangoflux_path=TANGOFLUX_DIR,
+        text_encoder_path=TEXT_ENCODER_DIR,
+        device="cuda",
+    ):
+        if self.model is None or self.enable_teacache != enable_teacache:
+            del self.model
+            
+            pbar = ProgressBar(6)
 
             if not os.path.exists(tangoflux_path):
                 log.info(f"Downloading TangoFlux models to: {tangoflux_path}")
@@ -61,16 +80,20 @@ class TangoFluxLoader:
 
             pbar.update(1)
 
-            log.info(f"Loading config")
+            log.info("Loading config")
 
             with open(os.path.join(tangoflux_path, "config.json"), "r") as f:
                 config = json.load(f)
-                
+
             pbar.update(1)
-            
-            text_encoder = re.sub(r'[<>:"/\\|?*]', '-', config.get("text_encoder_name", "google/flan-t5-large"))
+
+            text_encoder = re.sub(
+                r'[<>:"/\\|?*]',
+                "-",
+                config.get("text_encoder_name", "google/flan-t5-large"),
+            )
             text_encoder_path = os.path.join(text_encoder_path, text_encoder)
-            
+
             if not os.path.exists(text_encoder_path):
                 log.info(f"Downloading text encoders to: {text_encoder_path}")
                 snapshot_download(
@@ -82,28 +105,57 @@ class TangoFluxLoader:
 
             pbar.update(1)
 
-            log.info(f"Loading TangoFlux models")
+            log.info("Loading TangoFlux models")
 
             model_weights = load_torch_file(
-                os.path.join(tangoflux_path, "tangoflux.safetensors"), device=torch.device(device)
+                os.path.join(tangoflux_path, "tangoflux.safetensors"),
+                device=torch.device(device),
             )
+
+            pbar.update(1)
+            
+            if enable_teacache:
+                log.info("Enabling TeaCache")
+                FluxTransformer2DModel.forward = teacache_forward
+            else:
+                log.info("Disabling TeaCache")
+                FluxTransformer2DModel.forward = self.original_forward
+
             self.model = TangoFlux(config, text_encoder_path)
+
             self.model.load_state_dict(model_weights, strict=False)
             self.model.to(device)
 
-            pbar.update(1)
-
-            log.info(f"Loading TangoFlux VAE")
-
-            vae_weights = load_torch_file(
-                os.path.join(tangoflux_path, "vae.safetensors")
-            )
-            self.vae = AutoencoderOobleck()
-            self.vae.load_state_dict(vae_weights)
-            self.vae.to(device)
+            if enable_teacache:
+                self.model.transformer.__class__.enable_teacache = True
+                self.model.transformer.__class__.cnt = 0
+                self.model.transformer.__class__.rel_l1_thresh = rel_l1_thresh
+                self.model.transformer.__class__.accumulated_rel_l1_distance = 0
+                self.model.transformer.__class__.previous_modulated_input = None
+                self.model.transformer.__class__.previous_residual = None
 
             pbar.update(1)
+            
+            self.enable_teacache = enable_teacache
+            self.rel_l1_thresh = rel_l1_thresh
+            
+            if self.vae is None:
+                log.info("Loading TangoFlux VAE")
 
+                vae_weights = load_torch_file(
+                    os.path.join(tangoflux_path, "vae.safetensors")
+                )
+                self.vae = AutoencoderOobleck()
+                self.vae.load_state_dict(vae_weights)
+                self.vae.to(device)
+            
+            pbar.update(1)
+                
+        if self.enable_teacache == True and self.rel_l1_thresh != rel_l1_thresh:
+            self.model.transformer.__class__.rel_l1_thresh = rel_l1_thresh
+            
+            self.rel_l1_thresh = rel_l1_thresh
+                
         return (self.model, self.vae)
 
 
@@ -134,14 +186,28 @@ class TangoFluxSampler:
     DESCRIPTION = "Sampler for TangoFlux"
 
     def sample(
-        self, model, prompt, steps=50, guidance_scale=3, duration=10, seed=0, batch_size=1, device="cuda"
+        self,
+        model,
+        prompt,
+        steps=50,
+        guidance_scale=3,
+        duration=10,
+        seed=0,
+        batch_size=1,
+        device="cuda",
     ):
         pbar = ProgressBar(steps)
 
         with torch.no_grad():
             model.to(device)
-            
-            log.info(f"Generating latents with TangoFlux")
+
+            try:
+                if model.transformer.__class__.enable_teacache:
+                    model.transformer.__class__.num_steps = steps
+            except:
+                pass
+
+            log.info("Generating latents with TangoFlux")
 
             latents = model(
                 prompt,
@@ -178,16 +244,16 @@ class TangoFluxVAEDecodeAndPlay:
     CATEGORY = "TangoFlux"
     FUNCTION = "play"
     DESCRIPTION = "Decoder and Player for TangoFlux"
-    
+
     def decode(self, vae, latents):
         results = []
-        
+
         for latent in latents:
             decoded = vae.decode(latent.unsqueeze(0).transpose(2, 1)).sample.cpu()
             results.append(decoded)
-        
+
         results = torch.cat(results, dim=0)
-        
+
         return results
 
     def play(
@@ -226,9 +292,9 @@ class TangoFluxVAEDecodeAndPlay:
         latents = latents["latents"]
 
         vae.to(device)
-        
-        log.info(f"Decoding Tangoflux latents")
-        
+
+        log.info("Decoding Tangoflux latents")
+
         waves = self.decode(vae, latents)
 
         pbar.update(1)
@@ -236,15 +302,17 @@ class TangoFluxVAEDecodeAndPlay:
         for wave in waves:
             waveform_end = int(duration * vae.config.sampling_rate)
             wave = wave[:, :waveform_end]
-            
+
             file = f"{filename}_{counter:05}_.{format}"
 
-            torchaudio.save(os.path.join(full_output_folder, file), wave, sample_rate=44100)
-            
+            torchaudio.save(
+                os.path.join(full_output_folder, file), wave, sample_rate=44100
+            )
+
             counter += 1
 
             audios.append({"filename": file, "subfolder": subfolder, "type": type})
-            
+
             pbar.update(1)
 
         return {

@@ -25,7 +25,7 @@ python install.py
 
 ## Example Workflow
 
-![example_workflow](https://github.com/user-attachments/assets/3293cf59-d3bf-4d48-8e40-2b9a74ea035a)
+![example_workflow](https://github.com/user-attachments/assets/afbf7b53-d712-4c9c-a538-53f0dc001f45)
 
 ## Usage
 
@@ -39,6 +39,18 @@ python install.py
 
 The nodes can be found in "TangoFlux" category as `TangoFluxLoader`, `TangoFluxSampler`, `TangoFluxVAEDecodeAndPlay`.
 
+![teacache_options](https://github.com/user-attachments/assets/29e676d9-902b-4ea2-9f72-18d3607996e8)
+
+> [TeaCache](https://github.com/LiewFeng/TeaCache) can speedup TangoFlux 2x without much audio quality degradation, in a training-free manner.
+>
+>
+> ## 📈 Inference Latency Comparisons on a Single A800
+> 
+> 
+> |      TangoFlux      |        TeaCache (0.25)       |    TeaCache (0.4)    |
+> |:-------------------:|:----------------------------:|:--------------------:|
+> |      ~4.08 s        |        ~2.42 s                |     ~1.95 s         |
+
 ## Citation
 
 ```bibtex
@@ -50,5 +62,13 @@ The nodes can be found in "TangoFlux" category as `TangoFluxLoader`, `TangoFluxS
       archivePrefix={arXiv},
       primaryClass={cs.SD},
       url={https://arxiv.org/abs/2412.21037}, 
+}
+```
+```
+@article{liu2024timestep,
+  title={Timestep Embedding Tells: It's Time to Cache for Video Diffusion Model},
+  author={Liu, Feng and Zhang, Shiwei and Wang, Xiaofeng and Wei, Yujie and Qiu, Haonan and Zhao, Yuzhong and Zhang, Yingya and Ye, Qixiang and Wan, Fang},
+  journal={arXiv preprint arXiv:2411.19108},
+  year={2024}
 }
 ```
