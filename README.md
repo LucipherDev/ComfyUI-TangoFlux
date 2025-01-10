@@ -37,7 +37,7 @@ python install.py
 
 **Manual Download:**
 - Download TangoFlux from [here](https://huggingface.co/declare-lab/TangoFlux/tree/main) into `models/tangoflux`
-- Download text encoders from [here](https://huggingface.co/google/flan-t5-large/tree/main) and put everything in `models/text_encoders/google-flan-t5-large`
+- Download text encoders from [here](https://huggingface.co/google/flan-t5-large/tree/main) into `models/text_encoders/google-flan-t5-large`
   
 *(Include Everything as shown in the screenshot above. Do Not Rename Anything)*
 
