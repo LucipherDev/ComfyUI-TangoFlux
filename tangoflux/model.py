@@ -3,9 +3,9 @@ import torch
 from diffusers import FluxTransformer2DModel
 from torch import nn
 from diffusers import FlowMatchEulerDiscreteScheduler
-import copy
 import numpy as np
 from tqdm import tqdm
+import warnings
 
 from typing import Optional, Union, List, Any, Dict
 from math import pi
@@ -73,7 +73,7 @@ def teacache_forward(
             joint_attention_kwargs is not None
             and joint_attention_kwargs.get("scale", None) is not None
         ):
-            logger.warning(
+            warnings.warn(
                 "Passing `scale` via `joint_attention_kwargs` when not using the PEFT backend is ineffective."
             )
     hidden_states = self.x_embedder(hidden_states)
@@ -420,11 +420,9 @@ class TangoFlux(nn.Module):
         self.num_attention_heads = config.get("num_attention_heads", 8)
         self.audio_seq_len = config.get("audio_seq_len", 645)
         self.max_duration = config.get("max_duration", 30)
-        self.uncondition = config.get("uncondition", False)
         self.text_encoder_name = config.get("text_encoder_name", "google/flan-t5-large")
 
         self.noise_scheduler = FlowMatchEulerDiscreteScheduler(num_train_timesteps=1000)
-        self.noise_scheduler_copy = copy.deepcopy(self.noise_scheduler)
         self.max_text_seq_len = 64
         self.text_encoder = T5EncoderModel.from_pretrained(
             text_encoder_dir if text_encoder_dir is not None else self.text_encoder_name
@@ -621,7 +619,7 @@ class TangoFlux(nn.Module):
 
             noise_pred = self.transformer(
                 hidden_states=latents_input,
-                # YiYi notes: divide it by 1000 for now because we scale it by 1000 in the transforme rmodel (we should not keep it but I want to keep the inputs same for the model for testing)
+                # YiYi notes: divide it by 1000 for now because we scale it by 1000 in the transformer model (we should not keep it but I want to keep the inputs same for the model for testing)
                 timestep=torch.tensor([t / 1000], device=device),
                 guidance=None,
                 pooled_projections=pooled_projection,

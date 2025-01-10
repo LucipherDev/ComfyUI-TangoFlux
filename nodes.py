@@ -48,7 +48,7 @@ class TangoFluxLoader:
     CATEGORY = "TangoFlux"
     FUNCTION = "load_tangoflux"
     DESCRIPTION = "Load TangoFlux model"
-    
+
     def __init__(self):
         self.model = None
         self.vae = None
@@ -65,18 +65,15 @@ class TangoFluxLoader:
         device="cuda",
     ):
         if self.model is None or self.enable_teacache != enable_teacache:
-            del self.model
-            
+
             pbar = ProgressBar(6)
 
-            if not os.path.exists(tangoflux_path):
-                log.info(f"Downloading TangoFlux models to: {tangoflux_path}")
-                snapshot_download(
-                    repo_id="declare-lab/TangoFlux",
-                    allow_patterns=["*.json", "*.safetensors"],
-                    local_dir=tangoflux_path,
-                    local_dir_use_symlinks=False,
-                )
+            snapshot_download(
+                repo_id="declare-lab/TangoFlux",
+                allow_patterns=["*.json", "*.safetensors"],
+                local_dir=tangoflux_path,
+                local_dir_use_symlinks=False,
+            )
 
             pbar.update(1)
 
@@ -94,18 +91,19 @@ class TangoFluxLoader:
             )
             text_encoder_path = os.path.join(text_encoder_path, text_encoder)
 
-            if not os.path.exists(text_encoder_path):
-                log.info(f"Downloading text encoders to: {text_encoder_path}")
-                snapshot_download(
-                    repo_id=config.get("text_encoder_name", "google/flan-t5-large"),
-                    allow_patterns=["*.json", "*.safetensors", "*.model"],
-                    local_dir=text_encoder_path,
-                    local_dir_use_symlinks=False,
-                )
+            snapshot_download(
+                repo_id=config.get("text_encoder_name", "google/flan-t5-large"),
+                allow_patterns=["*.json", "*.safetensors", "*.model"],
+                local_dir=text_encoder_path,
+                local_dir_use_symlinks=False,
+            )
 
             pbar.update(1)
 
             log.info("Loading TangoFlux models")
+            
+            del self.model
+            self.model = None
 
             model_weights = load_torch_file(
                 os.path.join(tangoflux_path, "tangoflux.safetensors"),
@@ -113,7 +111,7 @@ class TangoFluxLoader:
             )
 
             pbar.update(1)
-            
+
             if enable_teacache:
                 log.info("Enabling TeaCache")
                 FluxTransformer2DModel.forward = teacache_forward
@@ -121,24 +119,26 @@ class TangoFluxLoader:
                 log.info("Disabling TeaCache")
                 FluxTransformer2DModel.forward = self.original_forward
 
-            self.model = TangoFlux(config, text_encoder_path)
+            model = TangoFlux(config, text_encoder_path)
 
-            self.model.load_state_dict(model_weights, strict=False)
-            self.model.to(device)
+            model.load_state_dict(model_weights, strict=False)
+            model.to(device)
 
             if enable_teacache:
-                self.model.transformer.__class__.enable_teacache = True
-                self.model.transformer.__class__.cnt = 0
-                self.model.transformer.__class__.rel_l1_thresh = rel_l1_thresh
-                self.model.transformer.__class__.accumulated_rel_l1_distance = 0
-                self.model.transformer.__class__.previous_modulated_input = None
-                self.model.transformer.__class__.previous_residual = None
+                model.transformer.__class__.enable_teacache = True
+                model.transformer.__class__.cnt = 0
+                model.transformer.__class__.rel_l1_thresh = rel_l1_thresh
+                model.transformer.__class__.accumulated_rel_l1_distance = 0
+                model.transformer.__class__.previous_modulated_input = None
+                model.transformer.__class__.previous_residual = None
 
             pbar.update(1)
-            
+
+            self.model = model
+            del model
             self.enable_teacache = enable_teacache
             self.rel_l1_thresh = rel_l1_thresh
-            
+
             if self.vae is None:
                 log.info("Loading TangoFlux VAE")
 
@@ -148,14 +148,14 @@ class TangoFluxLoader:
                 self.vae = AutoencoderOobleck()
                 self.vae.load_state_dict(vae_weights)
                 self.vae.to(device)
-            
+
             pbar.update(1)
-                
+
         if self.enable_teacache == True and self.rel_l1_thresh != rel_l1_thresh:
             self.model.transformer.__class__.rel_l1_thresh = rel_l1_thresh
-            
+
             self.rel_l1_thresh = rel_l1_thresh
-                
+
         return (self.model, self.vae)
 
 

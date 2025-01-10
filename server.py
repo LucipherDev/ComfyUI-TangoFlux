@@ -4,10 +4,11 @@ import folder_paths
 
 web = server.web
 
+
 @server.PromptServer.instance.routes.get("/tangoflux/playaudio")
 async def play_audio(request):
     query = request.rel_url.query
-    
+
     filename = query.get("filename", None)
 
     if filename is None:
@@ -43,7 +44,7 @@ async def play_audio(request):
     }
 
     content_type = content_types.get(ext, None)
-    
+
     if content_type is None:
         return web.Response(status=400)
 
