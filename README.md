@@ -33,9 +33,13 @@ python install.py
 
 **Models can also be downloaded using the `install.py` script**
 
+![models_folder_structure](https://github.com/user-attachments/assets/94d8a54a-10d6-4f90-bb4d-3ee181dee3a2)
+
 **Manual Download:**
-- Download TangoFlux from [here](https://huggingface.co/declare-lab/TangoFlux/tree/main) and put everything in `models/tangoflux` (make sure to include the config files)
-- Download text encoders from [here](https://huggingface.co/google/flan-t5-large/tree/main) and put everything in `models/text_encoders/google-flan-t5-large` (make sure to include the config files)
+- Download TangoFlux from [here](https://huggingface.co/declare-lab/TangoFlux/tree/main) into `models/tangoflux`
+- Download text encoders from [here](https://huggingface.co/google/flan-t5-large/tree/main) and put everything in `models/text_encoders/google-flan-t5-large`
+  
+*(Include Everything as shown in the screenshot above. Do Not Rename Anything)*
 
 The nodes can be found in "TangoFlux" category as `TangoFluxLoader`, `TangoFluxSampler`, `TangoFluxVAEDecodeAndPlay`.
 
