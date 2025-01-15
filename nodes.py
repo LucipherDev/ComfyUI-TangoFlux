@@ -7,7 +7,6 @@ import torchaudio
 import re
 
 from diffusers import AutoencoderOobleck, FluxTransformer2DModel
-from huggingface_hub import snapshot_download
 
 from comfy.utils import load_torch_file, ProgressBar
 import folder_paths
@@ -66,16 +65,7 @@ class TangoFluxLoader:
     ):
         if self.model is None or self.enable_teacache != enable_teacache:
 
-            pbar = ProgressBar(6)
-
-            snapshot_download(
-                repo_id="declare-lab/TangoFlux",
-                allow_patterns=["*.json", "*.safetensors"],
-                local_dir=tangoflux_path,
-                local_dir_use_symlinks=False,
-            )
-
-            pbar.update(1)
+            pbar = ProgressBar(4)
 
             log.info("Loading config")
 
@@ -91,19 +81,12 @@ class TangoFluxLoader:
             )
             text_encoder_path = os.path.join(text_encoder_path, text_encoder)
 
-            snapshot_download(
-                repo_id=config.get("text_encoder_name", "google/flan-t5-large"),
-                allow_patterns=["*.json", "*.safetensors", "*.model"],
-                local_dir=text_encoder_path,
-                local_dir_use_symlinks=False,
-            )
-
-            pbar.update(1)
-
             log.info("Loading TangoFlux models")
             
             del self.model
             self.model = None
+            
+            torch.cuda.empty_cache()
 
             model_weights = load_torch_file(
                 os.path.join(tangoflux_path, "tangoflux.safetensors"),
@@ -116,7 +99,8 @@ class TangoFluxLoader:
                 log.info("Enabling TeaCache")
                 FluxTransformer2DModel.forward = teacache_forward
             else:
-                log.info("Disabling TeaCache")
+                if self.enable_teacache:
+                    log.info("Disabling TeaCache")
                 FluxTransformer2DModel.forward = self.original_forward
 
             model = TangoFlux(config, text_encoder_path)
@@ -136,6 +120,9 @@ class TangoFluxLoader:
 
             self.model = model
             del model
+            
+            torch.cuda.empty_cache()
+            
             self.enable_teacache = enable_teacache
             self.rel_l1_thresh = rel_l1_thresh
 
@@ -228,6 +215,7 @@ class TangoFluxVAEDecodeAndPlay:
         return {
             "required": {
                 "vae": ("TANGOFLUX_VAE",),
+                "tile_size": ("INT", {"default": 32, "min": 8, "max": 128, "step": 8}),
                 "latents": ("TANGOFLUX_LATENTS",),
                 "filename_prefix": ("STRING", {"default": "TangoFlux"}),
                 "format": (
@@ -245,21 +233,63 @@ class TangoFluxVAEDecodeAndPlay:
     FUNCTION = "play"
     DESCRIPTION = "Decoder and Player for TangoFlux"
 
-    def decode(self, vae, latents):
+    def decode_tiled(self, vae, latents, tile_size=32):
+        results = []
+        
+        with torch.no_grad():
+            for latent in latents:
+                torch.cuda.empty_cache()
+
+                latent = latent.unsqueeze(0).transpose(2, 1)
+
+                decoded_tiles = []
+                for i in range(0, latent.size(2), tile_size):
+                    tile = latent[:, :, i:i + tile_size]
+                    
+                    decoded_tile = vae.decode(tile).sample.cpu()
+                    decoded_tiles.append(decoded_tile)
+
+                    del decoded_tile
+                    torch.cuda.empty_cache()
+
+                decoded_latent = torch.cat(decoded_tiles, dim=2)
+                results.append(decoded_latent)
+
+            results = torch.cat(results, dim=0)
+        return results
+    
+
+    def decode(self, vae, latents, tile_size=32):
         results = []
 
-        for latent in latents:
-            decoded = vae.decode(latent.unsqueeze(0).transpose(2, 1)).sample.cpu()
-            results.append(decoded)
+        try:
+            with torch.no_grad():
+                try:
+                    print("Inducing OOM for testing...")
+                    oom_tensor = torch.empty((1610612736,), dtype=torch.float32, device="cuda")
+                except torch.OutOfMemoryError:
+                    print("OOM successfully induced for testing.")
+                    raise torch.OutOfMemoryError
+                
+                for latent in latents:
+                    torch.cuda.empty_cache()
 
-        results = torch.cat(results, dim=0)
+                    decoded = vae.decode(latent.unsqueeze(0).transpose(2, 1)).sample.cpu()
+                    results.append(decoded)
 
-        return results
+                results = torch.cat(results, dim=0)
+            return results
+
+        except torch.OutOfMemoryError:
+            torch.cuda.empty_cache()
+            log.warning("OOM encountered. Falling back to tiled decoding.")
+            return self.decode_tiled(vae, latents, tile_size)
 
     def play(
         self,
         vae,
         latents,
+        tile_size=32,
         filename_prefix="TangoFlux",
         format="wav",
         save_output=True,
@@ -285,7 +315,7 @@ class TangoFluxVAEDecodeAndPlay:
         )
 
         os.makedirs(full_output_folder, exist_ok=True)
-
+        
         pbar.update(1)
 
         duration = latents["duration"]
@@ -295,8 +325,8 @@ class TangoFluxVAEDecodeAndPlay:
 
         log.info("Decoding Tangoflux latents")
 
-        waves = self.decode(vae, latents)
-
+        waves = self.decode(vae, latents, tile_size)
+        
         pbar.update(1)
 
         for wave in waves:
@@ -312,7 +342,7 @@ class TangoFluxVAEDecodeAndPlay:
             counter += 1
 
             audios.append({"filename": file, "subfolder": subfolder, "type": type})
-
+            
             pbar.update(1)
 
         return {

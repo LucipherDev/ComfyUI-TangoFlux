@@ -1,16 +1,53 @@
 {
-  "last_node_id": 13,
-  "last_link_id": 15,
+  "last_node_id": 3,
+  "last_link_id": 3,
   "nodes": [
     {
-      "id": 10,
-      "type": "TangoFluxLoader",
+      "id": 3,
+      "type": "TangoFluxVAEDecodeAndPlay",
       "pos": [
-        380,
-        320
+        880,
+        230
       ],
       "size": [
-        210,
+        315,
+        150
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "vae",
+          "type": "TANGOFLUX_VAE",
+          "link": 2
+        },
+        {
+          "name": "latents",
+          "type": "TANGOFLUX_LATENTS",
+          "link": 3
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "TangoFluxVAEDecodeAndPlay"
+      },
+      "widgets_values": [
+        32,
+        "TangoFlux",
+        "wav",
+        true
+      ]
+    },
+    {
+      "id": 1,
+      "type": "TangoFluxLoader",
+      "pos": [
+        100,
+        230
+      ],
+      "size": [
+        315,
         102
       ],
       "flags": {},
@@ -22,7 +59,7 @@
           "name": "model",
           "type": "TANGOFLUX_MODEL",
           "links": [
-            11
+            1
           ],
           "slot_index": 0
         },
@@ -30,7 +67,7 @@
           "name": "vae",
           "type": "TANGOFLUX_VAE",
           "links": [
-            15
+            2
           ],
           "slot_index": 1
         }
@@ -44,47 +81,11 @@
       ]
     },
     {
-      "id": 13,
-      "type": "TangoFluxVAEDecodeAndPlay",
-      "pos": [
-        1060,
-        320
-      ],
-      "size": [
-        315,
-        126
-      ],
-      "flags": {},
-      "order": 2,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "vae",
-          "type": "TANGOFLUX_VAE",
-          "link": 15
-        },
-        {
-          "name": "latents",
-          "type": "TANGOFLUX_LATENTS",
-          "link": 14
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "TangoFluxVAEDecodeAndPlay"
-      },
-      "widgets_values": [
-        "TangoFlux",
-        "wav",
-        true
-      ]
-    },
-    {
-      "id": 11,
+      "id": 2,
       "type": "TangoFluxSampler",
       "pos": [
-        620,
-        320
+        450,
+        230
       ],
       "size": [
         400,
@@ -97,7 +98,7 @@
         {
           "name": "model",
           "type": "TANGOFLUX_MODEL",
-          "link": 11
+          "link": 1
         }
       ],
       "outputs": [
@@ -105,7 +106,7 @@
           "name": "latents",
           "type": "TANGOFLUX_LATENTS",
           "links": [
-            14
+            3
           ],
           "slot_index": 0
         }
@@ -118,7 +119,7 @@
         50,
         3,
         10,
-        106139285587780,
+        310686137950669,
         "randomize",
         1
       ]
@@ -126,42 +127,39 @@
   ],
   "links": [
     [
-      11,
-      10,
+      1,
+      1,
       0,
-      11,
+      2,
       0,
       "TANGOFLUX_MODEL"
     ],
     [
-      14,
-      11,
-      0,
-      13,
+      2,
       1,
-      "TANGOFLUX_LATENTS"
-    ],
-    [
-      15,
-      10,
       1,
-      13,
+      3,
       0,
       "TANGOFLUX_VAE"
+    ],
+    [
+      3,
+      2,
+      0,
+      3,
+      1,
+      "TANGOFLUX_LATENTS"
     ]
   ],
   "groups": [],
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.9480295566502464,
+      "scale": 0.8630044843049327,
       "offset": [
-        -200.83333333333337,
-        -102.2460379319304
+        95.83333333333337,
+        -8.663289166017137
       ]
-    },
-    "node_versions": {
-      "comfyui-tangoflux": "1.0.4"
     }
   },
   "version": 0.4

@@ -25,11 +25,9 @@ python install.py
 
 ## Example Workflow
 
-![example_workflow](https://github.com/user-attachments/assets/afbf7b53-d712-4c9c-a538-53f0dc001f45)
+![example_workflow](https://github.com/user-attachments/assets/610d2ccb-c827-4797-9d8f-50b193d43db3)
 
 ## Usage
-
-**All the necessary models should be automatically downloaded when the TangoFluxLoader node is used for the first time.**
 
 **Models can also be downloaded using the `install.py` script**
 
