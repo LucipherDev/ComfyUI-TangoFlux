@@ -264,13 +264,6 @@ class TangoFluxVAEDecodeAndPlay:
 
         try:
             with torch.no_grad():
-                try:
-                    print("Inducing OOM for testing...")
-                    oom_tensor = torch.empty((1610612736,), dtype=torch.float32, device="cuda")
-                except torch.OutOfMemoryError:
-                    print("OOM successfully induced for testing.")
-                    raise torch.OutOfMemoryError
-                
                 for latent in latents:
                     torch.cuda.empty_cache()
 
