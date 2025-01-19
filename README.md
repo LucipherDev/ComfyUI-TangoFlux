@@ -29,7 +29,7 @@ python install.py
 
 ## Usage
 
-**Models can also be downloaded using the `install.py` script**
+**Models can be downloaded using the `install.py` script**
 
 ![models_folder_structure](https://github.com/user-attachments/assets/94d8a54a-10d6-4f90-bb4d-3ee181dee3a2)
 
