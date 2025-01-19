@@ -273,7 +273,9 @@ class TangoFluxVAEDecodeAndPlay:
                 results = torch.cat(results, dim=0)
             return results
 
-        except torch.OutOfMemoryError:
+        except (torch.cuda.OutOfMemoryError, RuntimeError) as e:
+            if isinstance(e, RuntimeError) and "out of memory" not in str(e):
+                raise e
             torch.cuda.empty_cache()
             log.warning("OOM encountered. Falling back to tiled decoding.")
             return self.decode_tiled(vae, latents, tile_size)
