@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-tangoflux"
 description = "ComfyUI Custom Nodes for 'TangoFlux: Super Fast and Faithful Text to Audio Generation with Flow Matching'. This generates high-quality 44.1kHz audio up to 30 seconds using just a text prompt."
-version = "1.1.1"
+version = "1.2.0"
 license = {file = "LICENSE"}
 dependencies = ["torchaudio", "diffusers", "accelerate", "tqdm"]
 

@@ -5,6 +5,8 @@ import random
 import torch
 import torchaudio
 import re
+import subprocess
+import shutil
 
 from diffusers import AutoencoderOobleck, FluxTransformer2DModel
 
@@ -226,7 +228,8 @@ class TangoFluxVAEDecodeAndPlay:
             },
         }
 
-    RETURN_TYPES = ()
+    RETURN_TYPES = ("AUDIO",)
+    RETURN_NAMES = ("audio",)
     OUTPUT_NODE = True
 
     CATEGORY = "TangoFlux"
@@ -279,6 +282,38 @@ class TangoFluxVAEDecodeAndPlay:
             torch.cuda.empty_cache()
             log.warning("OOM encountered. Falling back to tiled decoding.")
             return self.decode_tiled(vae, latents, tile_size)
+        
+    def load_audio_for_vhs(self, file, sample_rate):
+        try:
+            from imageio_ffmpeg import get_ffmpeg_exe
+            ffmpeg_path = get_ffmpeg_exe()
+        except:
+            pass
+        
+        ffmpeg_path = shutil.which("ffmpeg")
+        if not ffmpeg_path:
+            if os.path.isfile("ffmpeg"):
+                ffmpeg_path = os.path.abspath("ffmpeg")
+            elif os.path.isfile("ffmpeg.exe"):
+                ffmpeg_path = os.path.abspath("ffmpeg.exe")
+        
+        if not ffmpeg_path:
+            log.error("No valid ffmpeg found")
+            return None
+                
+        args = [ffmpeg_path, "-i", file]
+        
+        try:
+            res =  subprocess.run(args + ["-f", "f32le", "-"],
+                                capture_output=True, check=True)
+            audio = torch.frombuffer(bytearray(res.stdout), dtype=torch.float32)
+        except subprocess.CalledProcessError:
+            log.error("Couldn't export audio")
+            return None
+        
+        audio = audio.reshape((-1, 2)).transpose(0, 1).unsqueeze(0)
+        
+        return {"waveform": audio, "sample_rate": sample_rate}
 
     def play(
         self,
@@ -339,9 +374,13 @@ class TangoFluxVAEDecodeAndPlay:
             audios.append({"filename": file, "subfolder": subfolder, "type": type})
             
             pbar.update(1)
+        
+        first_file = os.path.join(full_output_folder, audios[0]["filename"])
+        audio_for_vhs = self.load_audio_for_vhs(first_file, 44100)
 
         return {
             "ui": {"audios": audios},
+            "result": (audio_for_vhs,)
         }
 
 

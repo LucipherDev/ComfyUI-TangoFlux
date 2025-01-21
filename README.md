@@ -41,6 +41,8 @@ python install.py
 
 The nodes can be found in "TangoFlux" category as `TangoFluxLoader`, `TangoFluxSampler`, `TangoFluxVAEDecodeAndPlay`.
 
+The `audio` output of the `TangoFluxVAEDecodeAndPlay` can be used as audio input for the[ComfyUI-VideoHelperSuite](https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite) `VideoCombine` node. ***(This will not sync audio to the video)***
+
 ![teacache_options](https://github.com/user-attachments/assets/29e676d9-902b-4ea2-9f72-18d3607996e8)
 
 > [TeaCache](https://github.com/LiewFeng/TeaCache) can speedup TangoFlux 2x without much audio quality degradation, in a training-free manner.
