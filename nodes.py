@@ -163,6 +163,7 @@ class TangoFluxSampler:
                 "duration": ("INT", {"default": 10, "min": 1, "max": 30, "step": 1}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xFFFFFFFFFFFFFFFF}),
                 "batch_size": ("INT", {"default": 1, "min": 1, "max": 4096}),
+                "offload_model_to_cpu": ("BOOLEAN", {"default": False}),
             },
         }
 
@@ -183,6 +184,7 @@ class TangoFluxSampler:
         duration=10,
         seed=0,
         batch_size=1,
+        offload_model_to_cpu=False,
         device="cuda",
     ):
         pbar = ProgressBar(steps)
@@ -207,6 +209,10 @@ class TangoFluxSampler:
                 num_samples_per_prompt=batch_size,
                 callback_on_step_end=lambda: pbar.update(1),
             )
+            
+            if offload_model_to_cpu:
+                log.info("Offloading model to CPU")
+                model.to("cpu")
 
         return ({"latents": latents, "duration": duration},)
 
@@ -276,8 +282,8 @@ class TangoFluxVAEDecodeAndPlay:
                 results = torch.cat(results, dim=0)
             return results
 
-        except (torch.cuda.OutOfMemoryError, RuntimeError) as e:
-            if isinstance(e, RuntimeError) and "out of memory" not in str(e):
+        except RuntimeError as e:
+            if "OutOfMemoryError" not in type(e).__name__:
                 raise e
             torch.cuda.empty_cache()
             log.warning("OOM encountered. Falling back to tiled decoding.")
