@@ -25,7 +25,7 @@ python install.py
 
 ## Example Workflow
 
-![example_workflow](https://github.com/user-attachments/assets/610d2ccb-c827-4797-9d8f-50b193d43db3)
+![example_workflow](https://github.com/user-attachments/assets/eb4cb6c9-f9d9-4d64-a59a-00911b1aed61)
 
 ## Usage
 
@@ -40,6 +40,8 @@ python install.py
 *(Include Everything as shown in the screenshot above. Do Not Rename Anything)*
 
 The nodes can be found in "TangoFlux" category as `TangoFluxLoader`, `TangoFluxSampler`, `TangoFluxVAEDecodeAndPlay`.
+
+If you are on low VRAM, try enabling `offload_model_to_cpu` in `TangoFluxSampler`.
 
 The `audio` output of the `TangoFluxVAEDecodeAndPlay` can be used as audio input for the[ComfyUI-VideoHelperSuite](https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite) `VideoCombine` node. ***(This will not sync audio to the video)***
 

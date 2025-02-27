@@ -11,7 +11,7 @@
       ],
       "size": [
         315,
-        150
+        192
       ],
       "flags": {},
       "order": 2,
@@ -28,7 +28,13 @@
           "link": 3
         }
       ],
-      "outputs": [],
+      "outputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": null
+        }
+      ],
       "properties": {
         "Node name for S&R": "TangoFluxVAEDecodeAndPlay"
       },
@@ -36,7 +42,8 @@
         32,
         "TangoFlux",
         "wav",
-        true
+        true,
+        ""
       ]
     },
     {
@@ -89,7 +96,7 @@
       ],
       "size": [
         400,
-        220
+        244
       ],
       "flags": {},
       "order": 1,
@@ -119,9 +126,10 @@
         50,
         3,
         10,
-        310686137950669,
+        214076069052112,
         "randomize",
-        1
+        1,
+        false
       ]
     }
   ],
@@ -155,12 +163,16 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.8630044843049327,
-      "offset": [
-        95.83333333333337,
-        -8.663289166017137
-      ]
-    }
+      "scale": 1,
+      "offset": {
+        "0": 0,
+        "1": 0
+      }
+    },
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
   },
   "version": 0.4
 }
